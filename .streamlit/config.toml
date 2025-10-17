@@ -6,13 +6,18 @@ primaryColor = "#338AFF"              # Blue buttons and accents
 
 # Backgrounds
 backgroundColor = "#FDFBF7"           # Main background (cream)
-secondaryBackgroundColor = "#338AFF"  # Sidebar / navigation (blue)
+secondaryBackgroundColor = "#a9c5eb"  # Sidebar / navigation (blue)
 
 # Text color (auto-applies where background is light)
 textColor = "#364153"                 # Text for cream backgrounds
 
 # Font
 font = "Inter"
+
+#youtube
+API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
+
+
 
 #youtube
 API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
