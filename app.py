@@ -144,6 +144,38 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# HELPER FUNCTIONS
+def get_database_path():
+    """Get the correct database path for different environments"""
+    import os
+    import tempfile
+    import sqlite3
+
+    # For Streamlit Cloud, use a temporary directory or relative path
+    if "STREAMLIT_SERVER" in os.environ or not os.path.exists("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app"):
+        # First try the current working directory
+        db_path = Path("theramuse.db")
+
+        # If we can't create the database in the current directory, try a temp directory
+        try:
+            # Test if we can create/write to the database file
+            test_conn = sqlite3.connect(str(db_path))
+            test_conn.close()
+            print(f"Using database path: {db_path.absolute()}")
+            return db_path
+        except Exception as e:
+            print(f"Cannot create database in current directory: {e}")
+            # Fall back to a temporary directory
+            temp_dir = Path(tempfile.gettempdir()) / "theramuse"
+            temp_dir.mkdir(exist_ok=True)
+            db_path = temp_dir / "theramuse.db"
+            print(f"Using temporary database path: {db_path}")
+            return db_path
+    else:
+        # Local development path
+        return Path("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
+
 ##########
 
 st.markdown("""
@@ -745,7 +777,7 @@ def get_condition_code(condition: str) -> str:
 # PATIENT DATABASE FUNCTIONS
 def get_patient_db_connection():
     """Get connection to patient database"""
-    db_path = Path("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
+    db_path = get_database_path()
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
@@ -1822,7 +1854,7 @@ def render_recommendations_with_feedback(recommendations: Dict, patient_info: Di
     
     # Get TheraMuse instance
     if 'theramuse' not in st.session_state:
-        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
+        st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
 
     theramuse = st.session_state.theramuse
     
@@ -2208,7 +2240,9 @@ def page_intake():
             with st.spinner(f" TheramuseRX is generating personalized recommendations "):
                 try:
                     if 'theramuse' not in st.session_state:
-                        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
+                        db_path = str(get_database_path())
+                        print(f"Initializing TheraMuse with database: {db_path}")
+                        st.session_state.theramuse = TheraMuse(db_path=db_path)
 
                     theramuse = st.session_state.theramuse
 
@@ -2216,9 +2250,18 @@ def page_intake():
                     recommendations = theramuse.get_therapy_recommendations(
                         patient_info, actual_condition, patient_id
                     )
+                except sqlite3.Error as db_error:
+                    st.error(f"Database error: {str(db_error)}")
+                    st.error("This might be a permission issue on Streamlit Cloud. Please try refreshing the page.")
+                    st.info("Debug info: The app is trying to create a database file for storing patient data.")
+                    if "STREAMLIT_SERVER" in os.environ:
+                        st.info("Running on Streamlit Cloud - using temporary directory for database.")
+                    st.stop()
                 except Exception as db_error:
-                    st.error(f"Database initialization error: {str(db_error)}")
-                    st.error("Please try again or check database permissions.")
+                    st.error(f"Initialization error: {str(db_error)}")
+                    st.error("Please try again or contact support.")
+                    import traceback
+                    st.error(f"Technical details: {traceback.format_exc()}")
                     st.stop()
 
                 # Save to our enhanced patient database
@@ -2358,7 +2401,7 @@ def page_analytics():
     """, unsafe_allow_html=True)
     
     if 'theramuse' not in st.session_state:
-        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
+        st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
 
     theramuse = st.session_state.theramuse
     analytics = theramuse.get_analytics()
