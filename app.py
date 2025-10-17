@@ -2170,7 +2170,7 @@ def page_intake():
         with st.form("submission_form"):
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='True')
+                submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='stretch')
 
         # ONLY process when form is explicitly submitted
         if submitted:
