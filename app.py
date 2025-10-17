@@ -50,52 +50,18 @@ def load_color_schema():
         'accent_dark': '#344E41'
     }
 
-# Import from ml.py - Added robust error handling for Streamlit Cloud
-import sys
-import os
-from pathlib import Path
-
-# Add current directory to Python path if not already there
-current_dir = Path(__file__).parent.absolute()
-if str(current_dir) not in sys.path:
-    sys.path.insert(0, str(current_dir))
-
-# Debug: Print current path for troubleshooting
-if "STREAMLIT_SERVER" in os.environ:
-    print(f"Streamlit Cloud - Current directory: {current_dir}")
-    print(f"Python path: {sys.path[:3]}")
-    print(f"Files in directory: {list(current_dir.glob('*.py'))[:5]}")
-
-try:
-    import ml
-    # Extract classes from ml module
-    TheraMuse = ml.TheraMuse
-    DementiaTherapy = ml.DementiaTherapy
-    DownSyndromeTherapy = ml.DownSyndromeTherapy
-    ADHDTherapy = ml.ADHDTherapy
-    YouTubeAPI = ml.YouTubeAPI
-    BangladeshiGenerationalMatrix = ml.BangladeshiGenerationalMatrix
-    BigFivePersonalityMapping = ml.BigFivePersonalityMapping
-    LinearThompsonSampling = ml.LinearThompsonSampling
-    DatabaseManager = ml.DatabaseManager
-
-    if "STREAMLIT_SERVER" in os.environ:
-        print("✓ Successfully imported all classes from ml module")
-
-except ImportError as e:
-    error_msg = f"Import Error: Failed to import required modules from ml.py"
-    if "STREAMLIT_SERVER" in os.environ:
-        error_msg += f"\n\nDebug info:\n- Current directory: {current_dir}\n- Python path: {sys.path}\n- Error: {str(e)}"
-
-    st.error(error_msg)
-    st.error("Please ensure ml.py exists in the same directory as streamlit.py")
-    st.stop()
-except Exception as e:
-    st.error(f"Unexpected error during import: {str(e)}")
-    if "STREAMLIT_SERVER" in os.environ:
-        import traceback
-        st.error(f"Full traceback: {traceback.format_exc()}")
-    st.stop()
+# Import from main.py
+from ml import (
+    TheraMuse, 
+    DementiaTherapy, 
+    DownSyndromeTherapy, 
+    ADHDTherapy,
+    YouTubeAPI,
+    BangladeshiGenerationalMatrix,
+    BigFivePersonalityMapping,
+    LinearThompsonSampling,
+    DatabaseManager
+)
 
 # JavaScript to prevent Enter key from submitting forms in text input fields
 st.markdown("""
@@ -776,31 +742,10 @@ def get_condition_code(condition: str) -> str:
     }
     return mapping.get(condition, "dementia")
 
-# HELPER FUNCTIONS
-def get_database_path():
-    """Get the correct database path for different environments"""
-    import os
-
-    # For Streamlit Cloud, use a temporary directory or relative path
-    if "STREAMLIT_SERVER" in os.environ or not os.path.exists("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app"):
-        # Use the current working directory for Streamlit Cloud
-        return Path("theramuse.db")
-    else:
-        # Local development path
-        return Path("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
-
 # PATIENT DATABASE FUNCTIONS
 def get_patient_db_connection():
     """Get connection to patient database"""
-    import tempfile
-    import os
-
-    # Get the correct database path
-    db_path = get_database_path()
-
-    # Ensure the directory exists
-    db_path.parent.mkdir(parents=True, exist_ok=True)
-
+    db_path = Path("/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
     conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
@@ -1877,7 +1822,7 @@ def render_recommendations_with_feedback(recommendations: Dict, patient_info: Di
     
     # Get TheraMuse instance
     if 'theramuse' not in st.session_state:
-        st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
+        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
 
     theramuse = st.session_state.theramuse
     
@@ -2263,7 +2208,7 @@ def page_intake():
             with st.spinner(f" TheramuseRX is generating personalized recommendations "):
                 try:
                     if 'theramuse' not in st.session_state:
-                        st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
+                        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
 
                     theramuse = st.session_state.theramuse
 
@@ -2413,7 +2358,7 @@ def page_analytics():
     """, unsafe_allow_html=True)
     
     if 'theramuse' not in st.session_state:
-        st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
+        st.session_state.theramuse = TheraMuse(db_path="/home/spectre-rosamund/Documents/ubuntu/thera/theramuse_app/theramuse.db")
 
     theramuse = st.session_state.theramuse
     analytics = theramuse.get_analytics()
