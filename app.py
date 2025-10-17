@@ -626,18 +626,22 @@ st.markdown("""
     
     /* Form Elements */
     .stTextInput>div>div>input,
-    .stSelectbox>div>div>select {
-        background: rgba(255, 255, 255, 0.05) ;
-        border: 1px solid rgba(255, 255, 255, 0.1) ;
+    .stSelectbox>div>div>select,
+    .stNumberInput>div>div>input,
+    .stDateInput>div>div>input {
+        background: #a9c5eb ;
+        border: 1px solid #a9c5eb ;
         border-radius: 12px ;
-        color: white ;
+        color: #364153 ;
         transition: all 0.3s ease ;
     }
     
     .stTextInput>div>div>input:focus,
-    .stSelectbox>div>div>select:focus {
-        border-color: rgba(163, 177, 138, 0.5) ;
-        box-shadow: 0 0 0 2px rgba(163, 177, 138, 0.2) ;
+    .stSelectbox>div>div>select:focus,
+    .stNumberInput>div>div>input:focus,
+    .stDateInput>div>div>input:focus {
+        border-color: #364153 ;
+        box-shadow: 0 0 0 2px rgba(54, 65, 83, 0.2) ;
     }
 
     /* Success/Error Messages */
@@ -645,6 +649,24 @@ st.markdown("""
         border-radius: 12px;
         backdrop-filter: blur(20px);
         animation: slideInRight 0.4s ease-out;
+    }
+
+    /* Additional Form Elements */
+    .stMultiSelect>div>div>div {
+        background: #a9c5eb;
+        border: 1px solid #a9c5eb;
+        color: #364153;
+    }
+    .stMultiSelect>div>div>div>div>span {
+        color: #364153;
+    }
+    .stDateInput>div>div>div[role="textbox"] {
+        background: #a9c5eb;
+        color: #364153;
+    }
+    .stDateInput>div>div>input {
+        background: #a9c5eb;
+        color: #364153;
     }
     
     @keyframes slideInRight {
@@ -2170,6 +2192,30 @@ def page_intake():
         with st.form("submission_form"):
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
+                st.write("<br>", unsafe_allow_html=True)  # Add 1 inch vertical space
+                st.write("<br>", unsafe_allow_html=True)  # Add 1 inch vertical space
+                # CSS to remove white border from button
+                st.markdown("""
+                <style>
+                button[kind="primary"] {
+                    border: none !important;
+                    box-shadow: none !important;
+                    background-color: transparent !important;
+                    outline: none !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+                .stButton > button {
+                    border: none !important;
+                    box-shadow: none !important;
+                    background-color: transparent !important;
+                }
+                div[data-testid="stForm"] > div {
+                    padding: 0 !important;
+                    background-color: transparent !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
                 submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='stretch')
 
         # ONLY process when form is explicitly submitted
