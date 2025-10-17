@@ -1646,7 +1646,7 @@ def render_download_options(patient_info: Dict, recommendations: Dict, big5_scor
                display: block;
                width: 100%;
                padding: 0.75rem 1.5rem;
-               background: linear-gradient(135deg, #338AFF 0%, #1E6FFF 100%);
+               background: linear-gradient(135deg,#5385c9 0%, #1E6FFF 100%);
                color: white;
                text-decoration: none;
                border-radius: 12px;
@@ -1670,7 +1670,7 @@ def render_download_options(patient_info: Dict, recommendations: Dict, big5_scor
         )
 
     st.markdown("""
-    <div style='text-align: center; margin-top: 1rem; color: rgba(255,255,255,0.6); font-size: 0.9rem;'>
+    <div style='text-align: center; margin-top: 1rem; color: #5385c9; font-size: 0.9rem;'>
          <em>DOCX format includes formatted tables and is best for printing. JSON contains all raw data for developers. PDF (HTML) can be printed to PDF from your browser.</em>
     </div>
     """, unsafe_allow_html=True)
@@ -2170,7 +2170,7 @@ def page_intake():
         with st.form("submission_form"):
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='stretch')
+                submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='True')
 
         # ONLY process when form is explicitly submitted
         if submitted:
@@ -3081,8 +3081,8 @@ def main():
     # st.sidebar.markdown("<h1 style='text-align: center; margin-bottom: 2rem; color:  #338AFF !important;'></h1>", unsafe_allow_html=True)
 
     pages = {
-    " Patient Intake": page_intake,
-    "Patient Database": page_patient_database,
+    " User Intake": page_intake,
+    "User Database": page_patient_database,
     " Analytics": page_analytics,
     "Research Evidence": page_research_evidence,
     "About": page_about
