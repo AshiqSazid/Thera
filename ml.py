@@ -27,11 +27,7 @@ class YouTubeAPI:
 
     API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
     # Backup endpoints to try if primary fails
-    BACKUP_API_URLS = [
-        "https://api.theramuse.org/api/youtube/search",
-        "https://youtube-v2-api.rx.theramuse.net/search",
-        "https://theramuse-youtube-api.onrender.com/search"
-    ]
+
 
     def __init__(self):
         self.session = requests.Session()
