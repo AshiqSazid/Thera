@@ -87,114 +87,59 @@ class YouTubeAPI:
                 return None
             if duration.isdigit():
                 return int(duration)
+            # Handle ISO 8601 duration format (PT3H30M0S)
             match = re.match(r'^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$', duration)
             if match:
                 hours = int(match.group(1) or 0)
                 minutes = int(match.group(2) or 0)
                 seconds = int(match.group(3) or 0)
                 return hours * 3600 + minutes * 60 + seconds
+
+            # Handle HH:MM:SS format
+            match = re.match(r'^(\d+):(\d{2}):(\d{2})$', duration)
+            if match:
+                hours = int(match.group(1))
+                minutes = int(match.group(2))
+                seconds = int(match.group(3))
+                return hours * 3600 + minutes * 60 + seconds
+
+            # Handle MM:SS format
+            match = re.match(r'^(\d+):(\d{2})$', duration)
+            if match:
+                minutes = int(match.group(1))
+                seconds = int(match.group(2))
+                return minutes * 60 + seconds
         return None
 
     def _is_valid_music_result(self, song: Dict) -> bool:
-        """Strictly filter for individual songs only, excluding playlists, shorts, reels, and short videos."""
+        """SIMPLIFIED filtering - only block obvious non-music content"""
         title = song.get('title', '')
         if not title:
             return False
+
         lowered_title = title.lower()
+        url = song.get('url', '').lower() if song.get('url') else ''
 
-        # EXTREMELY Strict disallowed markers for non-song content
-        disallowed_title_markers = [
-            # Shorts and short videos (COMPREHENSIVE)
-            "#short", "shorts", "short video", "short reel", "short clip", "short film",
-            "shortfilm", "short movie", "mini movie", "quick video", "quick clip",
-            "reel", "reels", "instagram reel", "insta reel", "facebook reel",
-            "tiktok", "tiktok video", "tik tok", "douyin", "short content",
-            # Social media and platform-specific
-            "instagram", "insta", "facebook", "twitter", "x video", "snapchat",
-            "preview", "teaser", "trailer", "behind the scenes", "bts", "making of",
-            "vlog", "video blog", "daily vlog", "life vlog", "reaction video",
-            # Content type indicators
-            "compilation", "best of", "top 10", "top 5", "countdown", "ranking",
-            "moments", "highlights", "best moments", "funny moments", "epic moments",
-            # Only reject obvious compilation/playlist markers without artist
-            "various artists", "multiple artists", "compilation album",
-            "full album", "complete album", "discography", "megamix", "nonstop",
-            # Only reject multi-part if not artist-song format
-            "episode 1", "episode 2", "season 1"
+        # ONLY block obvious shorts/reels and social media
+        obvious_non_music = [
+            '#short', 'shorts', 'tiktok', 'instagram', 'facebook',
+            'twitter', 'snapchat', 'vlog', 'reaction video'
         ]
-        if any(marker in lowered_title for marker in disallowed_title_markers):
+
+        # Check title
+        if any(marker in lowered_title for marker in obvious_non_music):
             return False
 
-        # Only reject obvious multi-part content without artist
-        playlist_indicators = [
-            "episode", "season"
-        ]
-        if any(indicator in lowered_title for indicator in playlist_indicators) and ' - ' not in lowered_title:
+        # Check URL for shorts
+        if 'shorts/' in url or '/shorts' in url or 'tiktok.com' in url:
             return False
 
-        # URL filtering - only filter obvious shorts and reels
-        url = song.get('url')
-        if isinstance(url, str):
-            url_lower = url.lower()
-            # YouTube shorts and reels
-            if any(pattern in url_lower for pattern in [
-                'shorts/', '/shorts', 'youtube.com/shorts',
-                'tiktok.com', 'douyin.com'
-            ]):
-                return False
-
-        # Duration check - individual songs are typically 2-10 minutes
+        # Basic duration check - only block very short content
         duration_seconds = self._parse_duration_seconds(song.get('duration'))
-        if duration_seconds is not None:
-            if duration_seconds < 120:  # Less than 2 minutes = likely short/reel
-                return False
-            if duration_seconds > 600:  # More than 10 minutes = likely playlist/album
-                return False
-        # Note: If duration is None, we'll skip duration check (some APIs don't return duration)
-
-        # More lenient validation for individual songs
-        # Check if it's actually an individual song (look for artist - song format)
-        has_artist_separator = any(char in lowered_title for char in [' - ', ' by ', ' ft. ', ' feat. ', ' x ', ' vs '])
-
-        # Additional checks for legitimate individual songs
-        description = song.get('description', '').lower() if song.get('description') else ''
-        channel = song.get('channel', '').lower() if song.get('channel') else ''
-
-        # Check for obvious playlists/compilations to reject
-        obvious_playlist_indicators = [
-            'playlist', 'mix', 'collection', 'album', 'various artists',
-            'best of', 'greatest hits', 'top 10', 'top hits', 'essentials',
-            'multiple songs', 'full album', 'complete album'
-        ]
-
-        # If title contains obvious playlist indicators, reject
-        if any(indicator in lowered_title for indicator in obvious_playlist_indicators):
-            # But allow if it has an artist separator (e.g., "Artist - Greatest Hits")
-            if not has_artist_separator:
-                return False
-
-        # More lenient approach - accept unless it's clearly a playlist
-        # Accept songs that have at least ONE positive indicator
-        has_positive_indicators = (
-            has_artist_separator  # Artist - Song format
-            or any(word in lowered_title for word in ['official', 'video', 'audio', 'lyric', 'music video'])
-            or (description and any(word in description for word in ['song', 'single', 'track', 'official']))
-        )
-
-        # Only reject if it has obvious negative indicators (playlist/compilation)
-        has_negative_indicators = (
-            any(word in lowered_title for word in ['playlist', 'mix', 'collection', 'album', 'various artists'])
-            or (description and any(word in description for word in ['playlist', 'album', 'collection', 'various artists', 'best of', 'greatest']))
-            or (channel and any(word in channel for word in ['various artists', 'topic', 'compilation']))
-        )
-
-        # Accept if it has positive indicators OR doesn't have negative indicators
-        # But reject if title clearly indicates multiple songs without an artist
-        multi_song_in_title = any(indicator in lowered_title for indicator in ['500 songs', 'top hits', 'best hits', 'greatest hits'])
-        if multi_song_in_title and not has_artist_separator:
+        if duration_seconds is not None and duration_seconds < 30:
             return False
 
-        # Otherwise, accept the song
+        # Accept everything else - let YouTube's music filter do the work
         return True
 
     def _vary_query(self, base_query: str) -> str:
@@ -548,21 +493,6 @@ class YouTubeAPI:
         except Exception as e:
             print(f" Search failed for '{query}': {e}")
             return self._create_placeholder_songs(query, max_results)
-
-    def _create_placeholder_songs(self, query: str, count: int) -> List[Dict]:
-        """Create placeholder songs when API fails"""
-        placeholder_songs = []
-        for i in range(min(5, count)):
-            placeholder_songs.append({
-                'title': f'Instrumental Music for {query} - Track {i+1}',
-                'url': f'https://www.youtube.com/watch?v=placeholder{query.replace(" ", "")}{i+1}',
-                'duration': f'{3+i}:{30+i*10:02d}',
-                'channel': 'TheraMuse Music Library',
-                'viewCount': 1000 + i * 100,
-                'thumbnail': 'https://img.youtube.com/vi/default/hqdefault.jpg'
-            })
-        print(f" Created {len(placeholder_songs)} placeholder songs for '{query}'")
-        return placeholder_songs
 
     def clear_cache(self):
         self._song_cache.clear()
@@ -1832,63 +1762,9 @@ class DatabaseManager:
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
 
-    def _migrate_therapy_sessions_table(self):
-        """Migrate therapy_sessions table if it has old schema"""
-        cursor = self.conn.cursor()
-
-        try:
-            # Check if table exists and get its schema
-            cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='therapy_sessions'")
-            table_info = cursor.fetchone()
-
-            if table_info:
-                schema = table_info[0]
-                # Check if this is the old schema (missing session_id as PRIMARY KEY)
-                if 'session_id TEXT PRIMARY KEY' not in schema:
-                    print(" Migrating therapy_sessions table schema...")
-
-                    # Backup existing data
-                    cursor.execute("ALTER TABLE therapy_sessions RENAME TO therapy_sessions_old")
-
-                    # Create new table with correct schema
-                    cursor.execute("""
-                        CREATE TABLE therapy_sessions (
-                            session_id TEXT PRIMARY KEY,
-                            patient_id TEXT NOT NULL,
-                            condition TEXT NOT NULL,
-                            therapy_method TEXT,
-                            total_songs INTEGER,
-                            exploration_rate REAL,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                        )
-                    """)
-
-                    # Try to migrate data from old table
-                    try:
-                        cursor.execute("""
-                            INSERT INTO therapy_sessions
-                            SELECT session_id, patient_id, condition, therapy_method,
-                                   total_songs, exploration_rate, created_at
-                            FROM therapy_sessions_old
-                        """)
-                        print("  Data migrated successfully")
-                    except Exception as e:
-                        print(f"  Could not migrate old data: {e}")
-
-                    # Drop old table
-                    cursor.execute("DROP TABLE therapy_sessions_old")
-                    self.conn.commit()
-
-        except Exception as e:
-            print(f"  Migration not needed or failed: {e}")
-            self.conn.rollback()
-
     def create_tables(self):
         """Create all necessary tables"""
         cursor = self.conn.cursor()
-
-        # Check if we need to migrate the therapy_sessions table
-        self._migrate_therapy_sessions_table()
 
         # Therapy sessions table
         cursor.execute("""
@@ -2110,7 +1986,7 @@ class TheraMuse:
     Orchestrates all therapy functions and integrates Thompson Sampling
     """
 
-    def __init__(self, model_path: str = "theramuse_model.pkl", db_path: str = "theramuse.db"):
+    def __init__(self, model_path: str = "theramuse_model.pkl", db_path: str = "therapy_therapy.db"):
         """
         STEP 3: Initialize TheraMuse with all therapy modules
         Sets up all components for music therapy recommendation system
