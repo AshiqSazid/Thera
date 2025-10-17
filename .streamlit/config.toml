@@ -9,13 +9,3 @@ secondaryBackgroundColor = "#a9c5eb"  # Sidebar / navigation (blue)
 textColor = "#364153"                 # Text for cream backgrounds
 # Font
 font = "Inter"
-#youtube
-API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
-#youtube
-API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
-[server]
-headless = true
-port = 8501
-enableCORS = true
-enableXsrfProtection = true
-address = "0.0.0.0"
