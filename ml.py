@@ -27,7 +27,11 @@ class YouTubeAPI:
 
     API_BASE_URL = "https://api.rx.theramuse.net/api/youtube/search"
     # Backup endpoints to try if primary fails
-
+    BACKUP_API_URLS = [
+        "https://api.theramuse.org/api/youtube/search",
+        "https://youtube-v2-api.rx.theramuse.net/search",
+        "https://theramuse-youtube-api.onrender.com/search"
+    ]
 
     def __init__(self):
         self.session = requests.Session()
@@ -112,47 +116,30 @@ class YouTubeAPI:
             # Content type indicators
             "compilation", "best of", "top 10", "top 5", "countdown", "ranking",
             "moments", "highlights", "best moments", "funny moments", "epic moments",
-            # Playlist and collection markers
-            "playlist", "mix", "collection", "album", "compilation album",
-            "greatest hits", "top songs", "various artists", "multiple artists",
+            # Only reject obvious compilation/playlist markers without artist
+            "various artists", "multiple artists", "compilation album",
             "full album", "complete album", "discography", "megamix", "nonstop",
-            "medley", "mashup", "remixes", "dubstep", "trap remix", "edm remix",
-            # Multi-part content
-            "part 1", "part 2", "part 3", "episode 1", "episode 2", "season 1",
-            "vol.", "volume", "track", "chapter", "section", "mixtape"
+            # Only reject multi-part if not artist-song format
+            "episode 1", "episode 2", "season 1"
         ]
         if any(marker in lowered_title for marker in disallowed_title_markers):
             return False
 
-        # Check for playlist indicators in title
+        # Only reject obvious multi-part content without artist
         playlist_indicators = [
-            "part 1", "part 2", "part 3", "episode", "vol.", "volume", "track",
-            "chapter", "section", "mixtape", "radio edit", "extended mix"
+            "episode", "season"
         ]
-        if any(indicator in lowered_title for indicator in playlist_indicators):
+        if any(indicator in lowered_title for indicator in playlist_indicators) and ' - ' not in lowered_title:
             return False
 
-        # ENHANCED URL filtering - exclude shorts, reels, playlists, and unwanted content
+        # URL filtering - only filter obvious shorts and reels
         url = song.get('url')
         if isinstance(url, str):
             url_lower = url.lower()
             # YouTube shorts and reels
             if any(pattern in url_lower for pattern in [
-                'shorts/', '/shorts', 'youtube.com/shorts', 'youtu.be/shorts',
-                'reel', 'instagram.com/reel', '/reel/', 'facebook.com/reel',
-                'tiktok.com', 'douyin.com', 'v.redd.it'
-            ]):
-                return False
-            # Playlist URLs
-            if any(pattern in url_lower for pattern in [
-                'playlist', '/playlist', 'watch?v=', '&list=', 'music.youtube.com',
-                'youtube.com/playlist', 'youtube.com/multi'
-            ]):
-                return False
-            # Social media platforms
-            if any(platform in url_lower for platform in [
-                'instagram.com', 'tiktok.com', 'facebook.com', 'twitter.com',
-                'snapchat.com', 'vimeo.com', 'dailymotion.com'
+                'shorts/', '/shorts', 'youtube.com/shorts',
+                'tiktok.com', 'douyin.com'
             ]):
                 return False
 
@@ -163,8 +150,9 @@ class YouTubeAPI:
                 return False
             if duration_seconds > 600:  # More than 10 minutes = likely playlist/album
                 return False
+        # Note: If duration is None, we'll skip duration check (some APIs don't return duration)
 
-        # STRICT validation for individual songs
+        # More lenient validation for individual songs
         # Check if it's actually an individual song (look for artist - song format)
         has_artist_separator = any(char in lowered_title for char in [' - ', ' by ', ' ft. ', ' feat. ', ' x ', ' vs '])
 
@@ -172,28 +160,41 @@ class YouTubeAPI:
         description = song.get('description', '').lower() if song.get('description') else ''
         channel = song.get('channel', '').lower() if song.get('channel') else ''
 
-        # Must have at least ONE of these indicators to be considered a legitimate song
-        legitimate_song_indicators = [
-            has_artist_separator,  # Artist - Song format
-            any(word in lowered_title for word in ['official', 'video', 'audio', 'lyric', 'music video']),
-            any(word in description for word in ['song', 'single', 'track', 'official']),
-            not any(word in description for word in ['playlist', 'album', 'collection', 'various artists']),
-            not any(word in channel for word in ['various artists', 'topic', 'compilation'])
+        # Check for obvious playlists/compilations to reject
+        obvious_playlist_indicators = [
+            'playlist', 'mix', 'collection', 'album', 'various artists',
+            'best of', 'greatest hits', 'top 10', 'top hits', 'essentials',
+            'multiple songs', 'full album', 'complete album'
         ]
 
-        if not any(legitimate_song_indicators):
-            return False
-
-        # Final check - if title suggests multiple songs, reject
-        multi_song_indicators = [
-            'songs', 'tracks', 'hits', 'collection', 'album', 'various',
-            'multiple artists', 'best of', 'greatest', 'top', 'essentials'
-        ]
-        if any(indicator in lowered_title for indicator in multi_song_indicators):
-            # Only allow if it's clearly an individual song by a known artist
+        # If title contains obvious playlist indicators, reject
+        if any(indicator in lowered_title for indicator in obvious_playlist_indicators):
+            # But allow if it has an artist separator (e.g., "Artist - Greatest Hits")
             if not has_artist_separator:
                 return False
 
+        # More lenient approach - accept unless it's clearly a playlist
+        # Accept songs that have at least ONE positive indicator
+        has_positive_indicators = (
+            has_artist_separator  # Artist - Song format
+            or any(word in lowered_title for word in ['official', 'video', 'audio', 'lyric', 'music video'])
+            or (description and any(word in description for word in ['song', 'single', 'track', 'official']))
+        )
+
+        # Only reject if it has obvious negative indicators (playlist/compilation)
+        has_negative_indicators = (
+            any(word in lowered_title for word in ['playlist', 'mix', 'collection', 'album', 'various artists'])
+            or (description and any(word in description for word in ['playlist', 'album', 'collection', 'various artists', 'best of', 'greatest']))
+            or (channel and any(word in channel for word in ['various artists', 'topic', 'compilation']))
+        )
+
+        # Accept if it has positive indicators OR doesn't have negative indicators
+        # But reject if title clearly indicates multiple songs without an artist
+        multi_song_in_title = any(indicator in lowered_title for indicator in ['500 songs', 'top hits', 'best hits', 'greatest hits'])
+        if multi_song_in_title and not has_artist_separator:
+            return False
+
+        # Otherwise, accept the song
         return True
 
     def _vary_query(self, base_query: str) -> str:
