@@ -488,11 +488,11 @@ class YouTubeAPI:
                     return simplified_result
                 else:
                     print(f" No individual songs found for any query variant")
-                    # Return placeholder songs instead of empty list
-                    return self._create_placeholder_songs(query, max_results)
+                    # Return empty list - better than fake placeholder songs
+                    return []
         except Exception as e:
             print(f" Search failed for '{query}': {e}")
-            return self._create_placeholder_songs(query, max_results)
+            return []
 
     def clear_cache(self):
         self._song_cache.clear()
@@ -502,6 +502,7 @@ class YouTubeAPI:
     def get_cache_size(self):
         return len(self._song_cache)
 
+    
     def get_api_health_status(self) -> Dict:
         """API health diagnostics"""
         status = {
