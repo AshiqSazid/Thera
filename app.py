@@ -1615,14 +1615,14 @@ def render_download_options(patient_info: Dict, recommendations: Dict, big5_scor
     """Render download options at the end of the page"""
     st.markdown("---")
 
-    # Scroll to Top Button - Goes to Personalized Music Recommendations
+    # Scroll to Top Button - Goes to First Recommended Song
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("⬆ Scroll to Top", key="btn_scroll_to_recommendations", use_container_width=True):
-            # Set session state flag to scroll to recommendations
-            st.session_state._scroll_to_recommendations_flag = True
+        if st.button("⬆ Scroll to First Song", key="btn_scroll_to_first_song", use_container_width=True):
+            # Set session state flag to scroll to first song
+            st.session_state._scroll_to_first_song_flag = True
             # Also add a URL fragment for fallback
-            st.query_params.scroll = "recommendations"
+            st.query_params.scroll = "first-song"
             st.rerun()
 
     # Research Evidence Section
@@ -1879,7 +1879,7 @@ def render_recommendations_with_feedback(recommendations: Dict, patient_info: Di
         st.session_state.theramuse = TheraMuse(db_path=str(get_database_path()))
 
     theramuse = st.session_state.theramuse
-    
+
     # Display by category
     category_labels = {
         "birthplace_country": " From Your Country",
@@ -1898,19 +1898,26 @@ def render_recommendations_with_feedback(recommendations: Dict, patient_info: Di
         "additional_calm": " Additional Calming",
         "additional_focus": "Additional Focus"
     }
-    
+
+    first_song_rendered = False
+
     for category, data in recommendations['categories'].items():
         label = category_labels.get(category, category.replace('_', ' ').title())
         songs = data.get('songs', [])
-        
+
         if not songs:
             continue
-            
+
         with st.expander(f"{label} ({len(songs)} songs)", expanded=True):
-                  
+
             for idx, song in enumerate(songs, 1):
                 col1, col2 = st.columns([5, 1])
-                
+
+                # Add ID to the first song element
+                if not first_song_rendered:
+                    st.markdown('<div id="first-song" style="scroll-margin-top: 20px;"></div>', unsafe_allow_html=True)
+                    first_song_rendered = True
+
                 with col1:
                     display_song_card(song, label, idx)
                 
@@ -3210,6 +3217,54 @@ def main():
         """, unsafe_allow_html=True)
         # Clear the flag
         st.session_state._scroll_to_recommendations_flag = False
+        # Clear URL parameter
+        if 'scroll' in st.query_params:
+            del st.query_params['scroll']
+
+    # Scroll to First Song if flag is set
+    if '_scroll_to_first_song_flag' in st.session_state and st.session_state._scroll_to_first_song_flag:
+        st.markdown("""
+        <script>
+            // Multiple attempts to scroll to the first song
+            function scrollToFirstSong() {
+                console.log('Attempting to scroll to first-song...');
+                const element = document.getElementById('first-song');
+                if (element) {
+                    console.log('Found first song element, scrolling...');
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    return true;
+                } else {
+                    console.log('First song element not found, trying alternative approach...');
+                    // Try finding the first expander with songs
+                    const expanders = document.querySelectorAll('[data-testid="stExpander"]');
+                    if (expanders.length > 0) {
+                        console.log('Found first expander, scrolling...');
+                        expanders[0].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Try immediately
+            if (!scrollToFirstSong()) {
+                // Try after 100ms
+                setTimeout(() => scrollToFirstSong(), 100);
+                // Try again after 500ms
+                setTimeout(() => {
+                    if (!scrollToFirstSong()) {
+                        console.log('Fallback: scrolling to recommendations');
+                        const recElement = document.getElementById('personalized-recommendations');
+                        if (recElement) {
+                            recElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }, 500);
+            }
+        </script>
+        """, unsafe_allow_html=True)
+        # Clear the flag
+        st.session_state._scroll_to_first_song_flag = False
         # Clear URL parameter
         if 'scroll' in st.query_params:
             del st.query_params['scroll']
