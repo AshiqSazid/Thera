@@ -180,6 +180,19 @@ def get_database_path():
 
 st.markdown("""
 <style>
+/* Global border removal for specific elements */
+div, span, p, h1, h2, h3, h4, h5, h6,
+.stDataFrame, .stDataFrame *,
+.stSelectbox, .stMultiSelect, .stTextInput, .stNumberInput, .stDateInput,
+.stTabs, .stExpander, .stButton, .stMetric, .stAlert,
+.glass-card, .song-card, .metric-card, .category-badge,
+.streamlit-expanderHeader, [data-testid="stSidebar"] .stRadio {
+    border: none !important;
+    border-color: transparent !important;
+    border-style: none !important;
+    border-width: 0 !important;
+}
+
 /* Column headers */
 [data-testid="stDataFrame"] [role="columnheader"] {
     background-color: #a8b894 ;   /* same as your background */
@@ -271,7 +284,7 @@ st.markdown("""
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: none;
         padding: 2rem;
         margin: 1.5rem 0;
         box-shadow: 
@@ -291,7 +304,7 @@ st.markdown("""
         box-shadow: 
             0 16px 48px 0 rgba(163, 177, 138, 0.2),
             inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-        border-color: rgba(163, 177, 138, 0.3);
+        border-color: #FDFBF7;
     }
     
     /* Premium Song Card */
@@ -300,7 +313,7 @@ st.markdown("""
         backdrop-filter: blur(20px);
         padding: 1.8rem;
         border-radius: 16px;
-        border-left: 4px solid transparent;
+        border-left: none;
         border-image: linear-gradient(180deg, #A3B18A 0%, #588157 100%);
         border-image-slice: 1;
         margin: 1rem 0;
@@ -447,7 +460,7 @@ st.markdown("""
         padding: 2rem;
         border-radius: 16px;
         text-align: center;
-        border: 1px solid rgba(163, 177, 138, 0.2);
+        border: none;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         animation: scaleIn 0.5s ease-out backwards;
     }
@@ -467,7 +480,7 @@ st.markdown("""
         transform: translateY(-8px) scale(1.05);
         background: linear-gradient(135deg, rgba(163, 177, 138, 0.25) 0%, rgba(88, 129, 87, 0.25) 100%);
         box-shadow: 0 16px 48px rgba(163, 177, 138, 0.3);
-        border-color: rgba(163, 177, 138, 0.4);
+        border-color: #FDFBF7;
     }
     
     .metric-card h2, .metric-card h3 {
@@ -529,13 +542,13 @@ st.markdown("""
     .streamlit-expanderHeader {
         background: linear-gradient(135deg, rgba(51, 138, 255, 0.1) 0%, rgba(13, 91, 255, 0.1) 100%);
         border-radius: 12px;
-        border: 1px solid rgba(51, 138, 255, 0.2);
+        border: none;
         transition: all 0.3s ease;
     }
 
     .streamlit-expanderHeader:hover {
         background: linear-gradient(135deg, rgba(51, 138, 255, 0.2) 0%, rgba(13, 91, 255, 0.2) 100%);
-        border-color: rgba(51, 138, 255, 0.4);
+        border-color: #FDFBF7;
     }
     
     /* Category Badge */
@@ -548,7 +561,7 @@ st.markdown("""
         font-weight: 600;
         color: #E8DDB5;
         margin: 0.5rem 0;
-        border: 1px solid rgba(163, 177, 138, 0.3);
+        border: none;
     }
     
     /* Rank Badge */
@@ -590,7 +603,7 @@ st.markdown("""
         gap: 8px;
         background-color: rgba(51, 138, 255, 0.1);
         border-radius: 12px;
-        border: 1px solid rgba(51, 138, 255, 0.2);
+        border: none;
         padding: 4px;
     }
 
@@ -621,7 +634,7 @@ st.markdown("""
     .stTabs [aria-selected="true"] {
         background: linear-gradient(135deg, rgba(51, 138, 255, 0.2) 0%, rgba(13, 91, 255, 0.2) 100%);
         color: white;
-        border-color: rgba(51, 138, 255, 0.4);
+        border-color: #FDFBF7;
     }
     
     /* Form Elements */
@@ -630,7 +643,7 @@ st.markdown("""
     .stNumberInput>div>div>input,
     .stDateInput>div>div>input {
         background: #a9c5eb ;
-        border: 1px solid #a9c5eb ;
+        border: none ;
         border-radius: 12px ;
         color: #364153 ;
         transition: all 0.3s ease ;
@@ -640,7 +653,7 @@ st.markdown("""
     .stSelectbox>div>div>select:focus,
     .stNumberInput>div>div>input:focus,
     .stDateInput>div>div>input:focus {
-        border-color: #364153 ;
+        border-color: transparent ;
         box-shadow: 0 0 0 2px rgba(54, 65, 83, 0.2) ;
     }
 
@@ -704,12 +717,12 @@ st.markdown("""
         padding: 0.75rem;
         margin: 0.3rem 0;
         transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: none;
     }
     
     [data-testid="stSidebar"] .stRadio > label:hover {
         background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
+        border-color: #FDFBF7;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -735,7 +748,7 @@ def render_logo(size=150):
     letter-spacing: 2px;
     white-space: nowrap;
     overflow: hidden;
-    border-right: 3px solid #E8DDB5;
+    border-right: none;
     width: 0;
     margin: 2rem auto 1rem auto;
     animation: typing 3s steps(20, end) forwards, blink 0.7s step-end infinite;
@@ -749,7 +762,7 @@ def render_logo(size=150):
 
 /* blinking cursor */
 @keyframes blink {
-    50% { border-color: transparent; }
+    50% { opacity: 0; }
 }
 
 /* optional subtitle */
@@ -1511,10 +1524,10 @@ def create_pdf_download(patient_info: Dict, recommendations: Dict, big5_scores: 
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
             h1 {{ color: #A3B18A; text-align: center; }}
-            h2 {{ color: #588157; border-bottom: 2px solid #A3B18A; }}
+            h2 {{ color: #588157; border-bottom: none; }}
             h3 {{ color: #E8DDB5; }}
             table {{ border-collapse: collapse; width: 100%; margin: 10px 0; }}
-            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            th, td {{ border: none; padding: 8px; text-align: left; }}
             th {{ background-color: #f2f2f2; }}
             .song {{ margin: 5px 0; padding: 5px; background-color: #f9f9f9; }}
         </style>
@@ -2125,10 +2138,106 @@ def page_intake():
         st.session_state.form_data['condition'] = condition
 
         # Memory & Sleep Assessment - shown for all conditions
-        st.markdown(
-    '<h3 style="color:#364153; font-size:28px; font-weight:700;">Memory & Sleep Assessment</h3>',
-    unsafe_allow_html=True
-)
+        st.markdown("""
+        <div class="memory-sleep-section" style="border: 2px solid #FDFBF7; border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <h3 style="color:#364153; font-size:28px; font-weight:700; margin-top: 0;">Memory & Sleep Assessment</h3>""", unsafe_allow_html=True)
+
+
+        st.markdown("""
+        <style>
+        /* --- Base container --- */
+        .memory-sleep-section [data-testid="stCheckbox"] {
+            margin: 10px 0 !important;
+            padding: 8px !important;
+            background-color: rgba(169, 197, 235, 0.1) !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            position: relative !important;
+        }
+
+        /* --- Checkbox base --- */
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"] {
+            width: 24px !important;
+            height: 24px !important;
+            appearance: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            background-color: #FFFFFF !important;
+            border: 3px solid #FDFBF7 !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+            box-shadow: 0 0 0 1px #FDFBF7, 0 2px 4px rgba(0,0,0,0.1) !important;
+            transition: none !important;
+            outline: none !important;
+        }
+
+        /* --- Label --- */
+        .memory-sleep-section [data-testid="stCheckbox"] label {
+            margin-left: 10px !important;
+            color: #364153 !important;
+            font-weight: 500 !important;
+            font-size: 16px !important;
+            cursor: pointer !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* --- Checked state --- */
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"]:checked {
+            background-color: #a9c5eb !important;
+            border: 3px solid #FDFBF7 !important;
+        }
+
+        /* --- Add white checkmark --- */
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"]:checked::after {
+            content: "" !important;
+            position: absolute !important;
+            left: 7px !important;
+            top: 3px !important;
+            width: 6px !important;
+            height: 12px !important;
+            border: solid white !important;
+            border-width: 0 3px 3px 0 !important;
+            transform: rotate(45deg) !important;
+            display: block !important;
+        }
+
+        /* --- Disable hover/focus/active effects completely --- */
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"]:hover,
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"]:focus,
+        .memory-sleep-section [data-testid="stCheckbox"] input[type="checkbox"]:active,
+        .memory-sleep-section [data-testid="stCheckbox"]:hover,
+        .memory-sleep-section:hover {
+            background-color: #FFFFFF !important;
+            border: 3px solid #FDFBF7 !important;
+            box-shadow: 0 0 0 1px #FDFBF7, 0 2px 4px rgba(0,0,0,0.1) !important;
+            transition: none !important;
+            transform: none !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* --- Ensure consistent display --- */
+        .memory-sleep-section [data-testid="stCheckbox"],
+        .memory-sleep-section {
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: flex !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+
+        
+
         difficulty_sleeping = st.checkbox(
             "Difficulty sleeping?",
             value=st.session_state.form_data.get('difficulty_sleeping', False),
@@ -2170,6 +2279,82 @@ def page_intake():
             key="visited_mental_health"
         )
         st.session_state.form_data['visited_mental_health'] = visited_mental_health
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # JavaScript to force checkbox borders and visibility
+        st.markdown("""
+        <script>
+        // Force checkbox borders and visibility in Memory & Sleep Assessment
+        function forceCheckboxBorders() {
+            const section = document.querySelector('.memory-sleep-section');
+            if (!section) return;
+
+            const checkboxes = section.querySelectorAll('input[type="checkbox"]');
+            const containers = section.querySelectorAll('[data-testid="stCheckbox"]');
+
+            // Force visibility on all elements
+            [section, ...checkboxes, ...containers].forEach(function(element) {
+                if (element) {
+                    element.style.setProperty('visibility', 'visible', 'important');
+                    element.style.setProperty('opacity', '1', 'important');
+                    element.style.setProperty('display', 'block', 'important');
+                    element.style.setProperty('pointer-events', 'auto', 'important');
+                }
+            });
+
+            // Style checkboxes specifically
+            checkboxes.forEach(function(checkbox) {
+                checkbox.style.setProperty('width', '22px', 'important');
+                checkbox.style.setProperty('height', '22px', 'important');
+                checkbox.style.setProperty('min-width', '22px', 'important');
+                checkbox.style.setProperty('min-height', '22px', 'important');
+                checkbox.style.setProperty('background-color', '#ffffff', 'important');
+                checkbox.style.setProperty('border', '3px solid #FDFBF7', 'important');
+                checkbox.style.setProperty('box-shadow', '0 0 0 1px #FDFBF7, 0 2px 4px rgba(0,0,0,0.1)', 'important');
+                checkbox.style.setProperty('appearance', 'none', 'important');
+                checkbox.style.setProperty('-webkit-appearance', 'none', 'important');
+                checkbox.style.setProperty('-moz-appearance', 'none', 'important');
+                checkbox.style.setProperty('cursor', 'pointer', 'important');
+                checkbox.style.setProperty('position', 'relative', 'important');
+                checkbox.style.setProperty('z-index', '10', 'important');
+            });
+
+            // Ensure labels are positioned correctly
+            const labels = section.querySelectorAll('label');
+            labels.forEach(function(label) {
+                label.style.setProperty('margin-left', '10px', 'important');
+                label.style.setProperty('display', 'inline-block', 'important');
+                label.style.setProperty('vertical-align', 'middle', 'important');
+            });
+        }
+
+        // Run immediately and on mutations
+        forceCheckboxBorders();
+
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.addedNodes.length) {
+                    forceCheckboxBorders();
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true
+        });
+
+        // Run more frequently to ensure checkboxes stay visible
+        setInterval(forceCheckboxBorders, 100);
+
+        // Also run on mouse move to catch any hiding attempts
+        document.addEventListener('mousemove', forceCheckboxBorders);
+        document.addEventListener('scroll', forceCheckboxBorders);
+        </script>
+        """, unsafe_allow_html=True)
 
         st.markdown(
     '<h3 style="color:#364153; font-size:28px; font-weight:700;">Personality Assessment (Big-5)</h3>',
@@ -2223,7 +2408,7 @@ def page_intake():
                 }
                 </style>
                 """, unsafe_allow_html=True)
-                submitted = st.form_submit_button("Theramuse Recommendations", type="primary", width='stretch')
+                submitted = st.form_submit_button("Click to Generate Recommendations", type="primary", width='stretch')
 
         # ONLY process when form is explicitly submitted
         if submitted:
@@ -2988,7 +3173,7 @@ def page_research_evidence():
     <div style='background: linear-gradient(135deg, rgba(163, 177, 138, 0.2) 0%, rgba(88, 129, 87, 0.2) 100%);
                 padding: 1.5rem;
                 border-radius: 12px;
-                border-left: 4px solid #A3B18A;
+                border-left: none;
                 margin: 1.5rem 0;'>
         <h3 style='color: #364153; margin-top: 0; margin-bottom: 1rem; font-weight: 600;'>Research Summary</h3>
         <p style='color: style='color:#364153;'; line-height: 1.6; margin: 0;'>
